@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import json, urllib
 from flask import Flask, request, abort
-import urlfetch
+import requests
+import gspread
+from datetime import datetime
+from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
@@ -37,6 +40,23 @@ def post_webhook():
 
                     if 'text' in messaging_event['message']:
                         message_text = messaging_event['message']['text']
+
+                        # Accessing Google Spreadsheets
+                        scope = ['https://spreadsheets.google.com/feeds']
+
+                        credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+
+                        gc = gspread.authorize(credentials)
+
+                        wks = gc.open("Google Spreadsheet Database").sheet1
+
+                        wks.insert_row([sender_id, str(datetime.now())], index=2)
+
+                        # Fetch a cell range
+                        cell_list = wks.range('A1:B7')
+
+                        print(cell_list)
+
                         reply(sender_id, message_text)
 
     return "ok", 200
@@ -63,4 +83,4 @@ def reply(recipient_id, message_text):
     print data
 
     url = "https://graph.facebook.com/v2.6/me/messages?" + urllib.urlencode(params)
-    r = urlfetch.fetch(url=url, headers=headers, method='POST', payload=data)
+    r = requests.post(url=url, headers=headers, data=data)

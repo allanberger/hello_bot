@@ -7,3 +7,5 @@
 Flask==0.10
 urlfetch>=1.0.2
 gunicorn>=19.6.0
+gspread==0.4.1
+oauth2client>=3.0.0
